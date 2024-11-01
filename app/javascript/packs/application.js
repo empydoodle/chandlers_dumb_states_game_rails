@@ -8,6 +8,7 @@ import Turbolinks from "turbolinks"
 import * as ActiveStorage from "@rails/activestorage"
 import "channels"
 
+require.context('images', true)
 import 'styles/styles'
 import 'materialize-css'
 import 'material-icons/iconfont/material-icons.css'

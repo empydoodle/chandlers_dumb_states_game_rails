@@ -4,6 +4,9 @@ $secondary-color: color('materialize-red', 'darken-1') !default;
 
 @import 'materialize-css';
 
+@import 'pages';
+@import 'game';
+
 body {
   display: flex;
   min-height: 100vh;
