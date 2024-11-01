@@ -1,0 +1,36 @@
+## ignore the ignore files
+.gcloudignore
+.gitignore
+
+## ignore git config
+.git
+.gitignore
+
+## ignore precompiled vendor gems
+/vendor/bundle
+/public/packs-test
+/node_modules
+
+## ignore bundler config and it's irritating environment settings
+/.bundle
+
+## ignore temporary and log files, but retain the keep config
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/tmp/pids/*
+!/tmp/pids/
+!/tmp/pids/.keep
+
+## ignore local storage, retaining keep config
+/storage/*
+!/storage/.keep
+
+## ignore unrequired yarn bits
+/yarn-error.log
+yarn-debug.log*
+.yarn-integrity
+
+## ignore other unuseful and unnecessary files
+.byebug_history

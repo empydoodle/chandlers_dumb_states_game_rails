@@ -1,8 +1,12 @@
+require 'cgi'
 require 'cdsg.rb'
 
 class GameController < ApplicationController
   def game
     redirect_to "/game/capitals?#{game_params.to_h.to_param}" if params[:capitals_mode] == '1'
+    cookies[:session] = {
+      value: CGI.escape(Time.now.to_s)
+    }
     @cdsg = cdsg
   end
 
@@ -23,6 +27,13 @@ class GameController < ApplicationController
   end
 
   def complete
+    time_to_complete = Time.now - Time.new(CGI.unescape(cookies[:session]))
+    if time_to_complete > 180
+      flash[:notice] = "You completed the quiz in a human time: #{time_to_complete.to_s}s"
+    else
+      flash[:notice] = "You completed the quiz in a robot time: #{time_to_complete.to_s}s"
+    end
+    cookies.delete(:session)
   end
 
   def capitals

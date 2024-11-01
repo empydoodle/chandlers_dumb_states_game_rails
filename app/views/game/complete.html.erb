@@ -1,4 +1,7 @@
 <div class="container">
+  <% flash.each do |k, msg| %>
+    <script>M.toast({html: "<i class='material-icons'>info</i> &nbsp; <%= msg.to_s %>"})</script>
+  <% end %>
   <div class="row center-align">
     <div class="col s12">
       <h2>Game Complete!</h2>
