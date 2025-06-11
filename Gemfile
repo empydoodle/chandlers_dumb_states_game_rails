@@ -5,7 +5,6 @@ ruby '~> 3.4'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem 'rails', '~> 6.1.7', '= 6.1.7.6'
-gem 'concurrent-ruby', '1.3.4'
 # Use Puma as the app server
 gem 'puma', '~> 5.0'
 # Use SCSS for stylesheets
@@ -63,6 +62,3 @@ group :production do
 end
 
 gem 'material_icons'
-gem 'bigdecimal'
-gem 'mutex_m'
-gem 'benchmark'

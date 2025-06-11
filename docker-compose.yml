@@ -11,7 +11,3 @@ services:
       APPLICATION_HOSTS: localhost:8007, empydoodle-dt:8007                            ## permitted hosts for config.hosts
     ports:
       - "8007:3000"                                                                    ## allow us to access app on port 8008
-    networks:
-      - dev-network
-networks:
-  dev-network:
