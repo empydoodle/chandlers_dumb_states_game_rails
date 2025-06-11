@@ -57,8 +57,4 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'json'
 gem 'i18n'
 
-group :production do
-#  gem 'pg'
-end
-
 gem 'material_icons'
