@@ -62,4 +62,3 @@ group :production do
 end
 
 gem 'material_icons'
-gem 'concurrent-ruby', '1.3.4'
