@@ -1,63 +1,51 @@
 # syntax = docker/dockerfile:1
 
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version and Gemfile
-ARG RUBY_VERSION=3.4
-FROM registry.docker.com/library/ruby:$RUBY_VERSION AS base
+FROM registry.docker.com/library/ruby:3.0.7
 
 # Rails app lives here
 WORKDIR /rails
 
 # Set production environment
-ENV RAILS_ENV="production" \
-    BUNDLE_DEPLOYMENT="1" \
-    BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
-
-# Throw-away build stage to reduce size of final image
-FROM base AS build
-
-# Install packages needed to build gems
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev libvips pkg-config npm && \
-    npm install -g corepack
-
-# Install application gems
-COPY Gemfile Gemfile.lock ./
-RUN \
-    bundle config set frozen false && \
-    bundle install && \
-    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    bundle exec bootsnap precompile --gemfile
-
-# Copy application code
-COPY . .
-
-# Precompile bootsnap code for faster boot times
-RUN bundle exec bootsnap precompile app/ lib/
-
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
-
-# Final stage for app image
-FROM base
+ENV \
+  BUNDLE_DEPLOYMENT="1" \
+  BUNDLE_PATH="/usr/local/bundle" \
+  NODE_OPTIONS="--openssl-legacy-provider"
 
 # Install packages needed for deployment
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libvips vim && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Copy built artifacts: gems, application
-COPY --from=build /usr/local/bundle /usr/local/bundle
-COPY --from=build /rails /rails
+# Install node dependency
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 
-# Run and own only the runtime files as a non-root user for security
-RUN useradd rails --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
-USER rails:rails
+# set env
+ENV NVM_DIR=/root/.nvm
 
-# Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+# install node
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install 22 && corepack enable yarn"
+
+# Install application gems
+COPY Gemfile Gemfile.lock ./
+RUN /bin/bash -c "bundle config set frozen false && bundle install"
+RUN rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
+RUN /bin/bash -c "bundle exec bootsnap precompile --gemfile"
+
+# Copy application code
+COPY . .
+
+# Precompile bootsnap code for faster boot times
+RUN /bin/bash -c "bundle exec bootsnap precompile app/ lib/"
+
+# Update JS dependencies
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && npx browserslist@latest --update-db && npm_config_yes=true npx yarn-audit-fix"
+
+# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile"
+
+# set ENTRYPOINT for reloading nvm-environment
+ENTRYPOINT ["bash", "-c", "source $NVM_DIR/nvm.sh && ./bin/rails db:prepare && ./bin/rails webpacker:install && exec \"$@\"", "--"]
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD ["./bin/rails", "server"]
+CMD ["/bin/bash", "-c", "./bin/rails", "server"]
